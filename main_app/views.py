@@ -1,14 +1,19 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import Challenge, Goal
+from .models import Challenge, UserProfile, Goal
 from .serializers import ChallengeSerializer
 
+User = get_user_model()
+
 class ChallengeIndex(APIView):
-    
+    permission_classes = [AllowAny] # just for now
+
     def get(self, request): # imight make it take user id so i only send a list of user challenges
         try:
             queryset = Challenge.objects.all()
@@ -31,6 +36,7 @@ class ChallengeIndex(APIView):
                 return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ChallengeDetail(APIView):
+    permission_classes = [AllowAny] # just for now
     
     def get(self, request, challenge_id):
         try:
@@ -59,3 +65,28 @@ class ChallengeDetail(APIView):
             return Response({'message':f'challenge {challenge_id} is deleted'})
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SignUpView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self,request):
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
+        first_name = request.data.get("first_name")
+        
+        if not username or not email or not password or not first_name:
+            return Response({'errors':'Please fill all the sign up fields!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if User.objects.filter(username=username).exists():
+            return Response({"error":"username already exist"})
+        
+        user = User.objects.create_user(
+             username=username, email=email, password=password,first_name=first_name
+        )
+        user_profile = UserProfile.objects.create(user=user)
+        
+        return Response(
+            {"id": user.id, "username": user.username, "email": user.email},
+            status=status.HTTP_201_CREATED,
+        )
