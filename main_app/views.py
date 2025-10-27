@@ -9,7 +9,7 @@ from .serializers import ChallengeSerializer
 
 class ChallengeIndex(APIView):
     
-    def get(self, request):
+    def get(self, request): # imight make it take user id so i only send a list of user challenges
         try:
             queryset = Challenge.objects.all()
             serializer = ChallengeSerializer(queryset, many=True)
