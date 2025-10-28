@@ -119,7 +119,7 @@ class GoalIndex(APIView):
 
 class GoalDetail(APIView):
     permission_classes = [AllowAny]
-    def get(self, request, goal_id): # i just realize the challenge id is not really necessary :/ or is it
+    def get(self, request, challenge_id, goal_id):
         try:
             queryset = get_object_or_404(Goal,id=goal_id)
             serializer = GoalSerializer(queryset)
@@ -128,7 +128,7 @@ class GoalDetail(APIView):
         except Exception as error:
                 return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    def put(self, request, goal_id):
+    def put(self, request, challenge_id, goal_id):
         try:
             queryset = get_object_or_404(Goal, id=goal_id)
             serializer = GoalSerializer(queryset, data=request.data)
