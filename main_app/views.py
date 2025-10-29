@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
 from .models import Challenge, UserProfile, Goal, ChallengeMember, CompletedGoal
-from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSerializer
+from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSerializer, CompletedGoalSerializer
 
 User = get_user_model()
 
@@ -149,7 +149,7 @@ class GoalDetail(APIView):
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # it will have thesame or similar url to the prev class but the entities are diffrent so i made a new class for it 
-class ChallengeMemberDelete(APIView):
+class LeaveChallenge(APIView): # changed its name from ChallengeMemberDelete to this
     permission_classes = [AllowAny]
       
     def delete(self, request,challenge_id, member_id):
@@ -175,4 +175,34 @@ class JoinChallenge(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
+def update_points(user_profile, member, goal):
+    ## here i should make the points logic
+    # 1- add points to the challenge member
+    # 2- add points to the user total points field
+    user_profile.total_points += goal.points
+    user_profile.total_goals_completed +=1
+    member.total_points += goal.points
+    user_profile.save()
+    member.save()
+    
+class CompletedGoal(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request,challenge_id, goal_id, user_id):
+        try:
+            # i dont know if i should get the user from request or url
+            # also i dont need the challenge id but for better API format 
+            goal = get_object_or_404(Goal, id=goal_id)
+            user_profile = get_object_or_404(UserProfile, user=user_id)
+            member = get_object_or_404(ChallengeMember, user=user_profile, challenge=goal.challenge)
+            serializer = CompletedGoalSerializer(data=request.data, context={'goal': goal, 'member': member})
+           
+            if serializer.is_valid():
+                
+                update_points(user_profile,member ,goal)
+                
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as error:
+            return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
