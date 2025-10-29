@@ -1,7 +1,25 @@
 from rest_framework import serializers
-from .models import Challenge, ChallengeMember, Goal
+from .models import Challenge, ChallengeMember, Goal,CompletedGoal, User, UserProfile
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= User
+        fields = ['username', 'email', 'first_name']
+        
+class UserProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+    
+class CompletedGoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= CompletedGoal
+        fields = '__all__'
+        
 class ChallengeMemberSerializer(serializers.ModelSerializer):
+    completed_goals = CompletedGoalSerializer(many=True, read_only=True)
+    user = UserProfileSerializer()
     class Meta:
         model = ChallengeMember
         fields = '__all__'
@@ -12,9 +30,9 @@ class GoalSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class ChallengeSerializer(serializers.ModelSerializer):
-    
     members = ChallengeMemberSerializer(many=True, read_only=True)
     goals = GoalSerializer(many=True, read_only=True)
+    created_by = UserProfileSerializer(read_only=True)
     
     class Meta:
         model = Challenge
