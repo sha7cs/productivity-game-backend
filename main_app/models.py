@@ -40,11 +40,11 @@ class Goal(models.Model):
 
 class ChallengeMember(models.Model):
     user = models.ForeignKey(UserProfile , on_delete=models.CASCADE, related_name='challenges_joined')
-    Challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='members')
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='members')
     total_points = models.PositiveIntegerField(default=0)
     
     def __str__(self):
-        return f'{self.Challenge} - {self.user}'
+        return f'{self.challenge} - {self.user}'
 
 class CompletedGoal(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='completed_goals')

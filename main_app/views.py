@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticate
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import Challenge, UserProfile, Goal
+from .models import Challenge, UserProfile, Goal, ChallengeMember, CompletedGoal
 from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSerializer
 
 User = get_user_model()
@@ -139,11 +139,39 @@ class GoalDetail(APIView):
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-    def delete(self, request, goal_id):
+    def delete(self, request,challenge_id, goal_id):
         try:
             queryset = get_object_or_404(Goal, id=goal_id)
             queryset.delete()
             
             return Response({'message':f'Goal {goal_id} is deleted'})
+        except Exception as error:
+            return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ChallengeMemberAdd(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request,challenge_id, user_id):
+        try:
+            # i should add some logic that checks is user already a member? then you cant assign twice
+            serializer = ChallengeMemberSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
+        except Exception as error:
+            return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# it will have thesame or similar url to the prev class but the entities are diffrent so i made a new class for it 
+class ChallengeMemberDelete(APIView):
+    permission_classes = [AllowAny]
+      
+    def delete(self, request,challenge_id, member_id):
+        try:
+            challenge = get_object_or_404(Challenge, id=challenge_id)
+            queryset = get_object_or_404(ChallengeMember, id=member_id)
+            queryset.delete()
+            
+            return Response({'message':f'Member {member_id} is deleted from "{challenge.name}" challenge'})
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
