@@ -7,7 +7,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'first_name']
         
 class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
     class Meta:
         model = UserProfile
         fields = '__all__'
@@ -19,7 +19,6 @@ class CompletedGoalSerializer(serializers.ModelSerializer):
         
 class ChallengeMemberSerializer(serializers.ModelSerializer):
     completed_goals = CompletedGoalSerializer(many=True, read_only=True)
-    user = UserProfileSerializer()
     class Meta:
         model = ChallengeMember
         fields = '__all__'

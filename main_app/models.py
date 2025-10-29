@@ -43,6 +43,9 @@ class ChallengeMember(models.Model):
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='members')
     total_points = models.PositiveIntegerField(default=0)
     
+    class Meta:
+        unique_together = ('challenge', 'user')
+        
     def __str__(self):
         return f'{self.challenge} - {self.user}'
 
