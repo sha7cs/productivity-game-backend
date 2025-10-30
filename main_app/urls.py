@@ -7,7 +7,7 @@ urlpatterns = [
     path('challenges/<int:challenge_id>/goals/', GoalIndex.as_view(), name='challenge_goals'),
     path('challenges/<int:challenge_id>/goals/<int:goal_id>/', GoalDetail.as_view(), name='goal_detail'),
     path('challenges/<int:challenge_id>/delete-member/<int:member_id>/', LeaveChallenge.as_view(), name='delete_member'),
-    path('challenges/join/<int:user_id>/', JoinChallenge.as_view(), name='member_joins'),
+    path('challenges/join/', JoinChallenge.as_view(), name='member_joins'),
     path('challenges/<int:challenge_id>/goals/<int:goal_id>/complete/<int:user_id>/', CompletedGoal.as_view(), name='complete_goal'),
     # Auth
     path('login/', TokenObtainPairView.as_view(), name='login'),

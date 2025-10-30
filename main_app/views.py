@@ -12,19 +12,19 @@ from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSer
 User = get_user_model()
 
 def makeAsChallengeMember(challenge_id, user_id):
-    user_profile = UserProfile.objects.get(user=user_id)
+    user = User.objects.get(id=user_id)
     challenge = Challenge.objects.get(id=challenge_id)
     new_member = ChallengeMember.objects.create(
         challenge=challenge, 
-        user=user_profile 
+        user=user 
         )
     new_member.save()
 class ChallengeIndex(APIView):
-    permission_classes = [AllowAny] # just for now
+    permission_classes = [IsAuthenticated]
 
     def get(self, request): # imight make it take user id so i only send a list of user challenges
         try:
-            queryset = Challenge.objects.all()
+            queryset = Challenge.objects.filter(created_by=request.user)
             serializer = ChallengeSerializer(queryset, many=True)
             
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -47,7 +47,7 @@ class ChallengeIndex(APIView):
                 return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ChallengeDetail(APIView):
-    permission_classes = [AllowAny] # just for now
+    permission_classes = [IsAuthenticated]
     
     def get(self, request, challenge_id):
         try:
@@ -106,7 +106,7 @@ class SignUpView(APIView):
                     return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GoalIndex(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     def get(self, request, challenge_id):
         try:
@@ -129,7 +129,7 @@ class GoalIndex(APIView):
                 return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class GoalDetail(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     def get(self, request, challenge_id, goal_id):
         try:
             queryset = get_object_or_404(Goal,id=goal_id)
@@ -161,7 +161,7 @@ class GoalDetail(APIView):
 
 # it will have thesame or similar url to the prev class but the entities are diffrent so i made a new class for it 
 class LeaveChallenge(APIView): # changed its name from ChallengeMemberDelete to this
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
       
     def delete(self, request,challenge_id, member_id):
         try:
@@ -174,12 +174,12 @@ class LeaveChallenge(APIView): # changed its name from ChallengeMemberDelete to 
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class JoinChallenge(APIView):
-    permission_classes = [AllowAny]
-    def post(self, request, user_id):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
         try:
-            join_code = request.data.get('join_code') # i think it makes sense more like this that sent with url
+            join_code = request.data.get('joinCode') # i think it makes sense more like this than sent with url
             challenge = get_object_or_404(Challenge, join_code=join_code) # i want to make it send a special message if challenge not find
-            serializer = ChallengeMemberSerializer(data={'challenge':challenge.id,'user':user_id})
+            serializer = ChallengeMemberSerializer(data={'challenge':challenge.id,'user':request.user.id})
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -198,7 +198,7 @@ def update_points(user_profile, member, goal):
     member.save()
     
 class CompletedGoal(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     def post(self, request,challenge_id, goal_id, user_id):
         try:
             # i dont know if i should get the user from request or url

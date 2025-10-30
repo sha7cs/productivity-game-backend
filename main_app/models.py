@@ -18,7 +18,7 @@ def random_string(): # stack overflow on how to generate unique random value for
 class Challenge(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=300, null=True, blank=True)
-    created_by = models.ForeignKey(UserProfile, on_delete=models.DO_NOTHING ,  related_name='challenges_created') # keep in mind that i made it do nothing on delete it can cause errors i must handle
+    created_by = models.ForeignKey(User, on_delete=models.DO_NOTHING ,  related_name='challenges_created') # keep in mind that i made it do nothing on delete it can cause errors i must handle
     start_date = models.DateField()
     end_date = models.DateField()
     join_code = models.CharField(unique=True, default = random_string)
@@ -39,7 +39,7 @@ class Goal(models.Model):
         return f'{self.title} - {self.challenge}'
 
 class ChallengeMember(models.Model):
-    user = models.ForeignKey(UserProfile , on_delete=models.CASCADE, related_name='challenges_joined')
+    user = models.ForeignKey(User , on_delete=models.CASCADE, related_name='challenges_joined')
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='members')
     total_points = models.PositiveIntegerField(default=0)
     
