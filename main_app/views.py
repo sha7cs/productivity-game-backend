@@ -11,6 +11,14 @@ from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSer
 
 User = get_user_model()
 
+def makeAsChallengeMember(challenge_id, user_id):
+    user_profile = UserProfile.objects.get(user=user_id)
+    challenge = Challenge.objects.get(id=challenge_id)
+    new_member = ChallengeMember.objects.create(
+        challenge=challenge, 
+        user=user_profile 
+        )
+    new_member.save()
 class ChallengeIndex(APIView):
     permission_classes = [AllowAny] # just for now
 
@@ -26,10 +34,13 @@ class ChallengeIndex(APIView):
     def post(self, request):
         try:
             serializer = ChallengeSerializer(data=request.data)
-            
+
             # i will return to this to make the user logged in as the creator by default 
             if serializer.is_valid():
                 serializer.save()
+
+                makeAsChallengeMember(challenge_id = serializer.data['id'] , user_id=serializer.data['created_by'])
+                
                 return Response(serializer.data,status=status.HTTP_201_CREATED)
             return Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
         except Exception as error:
@@ -192,6 +203,9 @@ class CompletedGoal(APIView):
         try:
             # i dont know if i should get the user from request or url
             # also i dont need the challenge id but for better API format 
+            # here i make the url takes the user id then find the member of that user id then adds it as goal foeign key
+            # why didnt i just make it take the member id? i think because i was thinking of authentication so it will have only the user model id not member
+            # i might change it after i apply it in the frontend
             goal = get_object_or_404(Goal, id=goal_id)
             user_profile = get_object_or_404(UserProfile, user=user_id)
             member = get_object_or_404(ChallengeMember, user=user_profile, challenge=goal.challenge)
