@@ -197,9 +197,9 @@ def update_points(user_profile, member, goal):
     user_profile.save()
     member.save()
     
-class CompletedGoal(APIView):
+class MakeCompletedGoal(APIView):
     permission_classes = [IsAuthenticated]
-    def post(self, request,challenge_id, goal_id, user_id):
+    def post(self, request,challenge_id, goal_id):
         try:
             # i dont know if i should get the user from request or url
             # also i dont need the challenge id but for better API format 
@@ -207,16 +207,31 @@ class CompletedGoal(APIView):
             # why didnt i just make it take the member id? i think because i was thinking of authentication so it will have only the user model id not member
             # i might change it after i apply it in the frontend
             goal = get_object_or_404(Goal, id=goal_id)
-            user_profile = get_object_or_404(UserProfile, user=user_id)
-            member = get_object_or_404(ChallengeMember, user=user_profile, challenge=goal.challenge)
-            serializer = CompletedGoalSerializer(data=request.data, context={'goal': goal, 'member': member})
+            user_profile = get_object_or_404(UserProfile, user=request.user.id)
+            member = get_object_or_404(ChallengeMember, user=request.user.id, challenge=goal.challenge)
+            data = request.data
+            
+            data['goal'] = goal.id
+            data['challenge_member'] = member.id
+            serializer = CompletedGoalSerializer(data=data, context={'goal': goal.id, 'member': member})
            
-            if serializer.is_valid():
-                
+            if serializer.is_valid():         
                 update_points(user_profile,member ,goal)
-                
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                
+                return Response(data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as error:
+            return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # I will leave deleteing a complete goal entity for later, because logically it is not really needed,
+    # and i will see how i will do it after i apply the addition in frontend
+
+class CompleteGoalIndex(APIView):
+    def get(self, request, challenge_id):
+        try:
+            member = get_object_or_404(ChallengeMember, user=request.user.id, challenge=challenge_id)
+            queryset = CompletedGoal.objects.filter(challenge_member=member)
+            serializer = CompletedGoalSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
