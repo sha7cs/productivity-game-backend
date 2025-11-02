@@ -4,14 +4,13 @@ from .models import Challenge, ChallengeMember, Goal,CompletedGoal, User, UserPr
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model= User
-        fields = ['username', 'email', 'first_name']
+        fields = ['id','username', 'email', 'first_name']
         
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = UserProfile
         fields = '__all__'
-    
 
 class GoalSerializer(serializers.ModelSerializer):
     class Meta:

@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 
 from .models import Challenge, UserProfile, Goal, ChallengeMember, CompletedGoal
-from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSerializer, CompletedGoalSerializer
+from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSerializer, CompletedGoalSerializer, UserProfileSerializer
 
 User = get_user_model()
 
@@ -235,3 +235,14 @@ class CompleteGoalIndex(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class UserProfileIndex(APIView):
+    def get(self,request):
+        try:
+            user = request.user
+            userprofile = get_object_or_404(UserProfile, user = user)
+            serializer = UserProfileSerializer(userprofile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as error:
+            return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
