@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticate
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from .models import Challenge, UserProfile, Goal, ChallengeMember, CompletedGoal
 from .serializers import ChallengeSerializer, GoalSerializer, ChallengeMemberSerializer, CompletedGoalSerializer, UserProfileSerializer
@@ -24,7 +25,9 @@ class ChallengeIndex(APIView):
 
     def get(self, request): # imight make it take user id so i only send a list of user challenges
         try:
-            queryset = Challenge.objects.filter(created_by=request.user)
+            queryset = Challenge.objects.filter(
+                Q(created_by=request.user) | Q(members__user=request.user)
+            ).distinct()
             serializer = ChallengeSerializer(queryset, many=True)
             
             return Response(serializer.data, status=status.HTTP_200_OK)
