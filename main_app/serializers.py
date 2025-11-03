@@ -28,9 +28,13 @@ class CompletedGoalSerializer(serializers.ModelSerializer):
     
 class ChallengeMemberSerializer(serializers.ModelSerializer):
     completed_goals = CompletedGoalSerializer(many=True, read_only=True)
+    member_info = serializers.SerializerMethodField()
     class Meta:
         model = ChallengeMember
         fields = '__all__'
+    def get_member_info(self,obj): # i need to show their names in frontend
+        return UserSerializer(obj.user).data
+    
 class ChallengeSerializer(serializers.ModelSerializer):
     members = ChallengeMemberSerializer(many=True, read_only=True)
     goals = GoalSerializer(many=True, read_only=True)
