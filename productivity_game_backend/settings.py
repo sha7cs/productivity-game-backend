@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
     'main_app'
 ]
 
@@ -153,3 +154,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+CRONJOBS =[
+    ('* * * * *','main_app.cron.assign_winner'), # will run every day to check it a challenge ended then assign a winner
+]

@@ -23,7 +23,7 @@ class Challenge(models.Model):
     end_date = models.DateField()
     join_code = models.CharField(unique=True, default = random_string)
     is_active = models.BooleanField(default=True)
-    winner = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='challenges_won')
+    winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='challenges_won')
     
     def __str__(self):
         return self.name
