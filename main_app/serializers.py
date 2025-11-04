@@ -38,6 +38,7 @@ class ChallengeMemberSerializer(serializers.ModelSerializer):
 class ChallengeSerializer(serializers.ModelSerializer):
     members = ChallengeMemberSerializer(many=True, read_only=True)
     goals = GoalSerializer(many=True, read_only=True)
+    winner = UserSerializer()
     # created_by = UserProfileSerializer(read_onl) # it shouldnt be read only because it is a field in this model
     
     class Meta:

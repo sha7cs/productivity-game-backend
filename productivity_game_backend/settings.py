@@ -156,5 +156,5 @@ REST_FRAMEWORK = {
 }
 
 CRONJOBS =[
-    ('* * * * *','main_app.cron.assign_winner'), # will run every day to check it a challenge ended then assign a winner
+    ('0 0 * * *','main_app.cron.assign_winner'), # will run every day to check it a challenge ended then assign a winner
 ]
