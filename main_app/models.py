@@ -55,5 +55,8 @@ class CompletedGoal(models.Model):
     completion_date = models.DateField(auto_now_add=True)
     # proof = models.ImageField() # will see it later since it's optional
     
+    class Meta:
+        unique_together = ('goal', 'challenge_member') 
+        # for future work i will make user can complete a goal several times but only once a day
     def __str__(self):
         return f'{self.goal} completed by {self.challenge_member}'

@@ -20,6 +20,9 @@ def makeAsChallengeMember(challenge_id, user_id):
         user=user 
         )
     new_member.save()
+    profile = user.userprofile
+    profile.total_challenges_joined += 1
+    profile.save()
 class ChallengeIndex(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -162,8 +165,7 @@ class GoalDetail(APIView):
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# it will have thesame or similar url to the prev class but the entities are diffrent so i made a new class for it 
-class LeaveChallenge(APIView): # changed its name from ChallengeMemberDelete to this
+class LeaveChallenge(APIView): 
     permission_classes = [IsAuthenticated]
       
     def delete(self, request,challenge_id, member_id):
@@ -185,13 +187,15 @@ class JoinChallenge(APIView):
             serializer = ChallengeMemberSerializer(data={'challenge':challenge.id,'user':request.user.id})
             if serializer.is_valid():
                 serializer.save()
+                profile = UserProfile.objects.filter(user=request.user.id)
+                profile.total_challenges_joined += 1
+                profile.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def update_points(user_profile, member, goal):
-    ## here i should make the points logic
     # 1- add points to the challenge member
     # 2- add points to the user total points field
     user_profile.total_points += goal.points
@@ -204,11 +208,6 @@ class MakeCompletedGoal(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request,challenge_id, goal_id):
         try:
-            # i dont know if i should get the user from request or url
-            # also i dont need the challenge id but for better API format 
-            # here i make the url takes the user id then find the member of that user id then adds it as goal foeign key
-            # why didnt i just make it take the member id? i think because i was thinking of authentication so it will have only the user model id not member
-            # i might change it after i apply it in the frontend
             goal = get_object_or_404(Goal, id=goal_id)
             user_profile = get_object_or_404(UserProfile, user=request.user.id)
             member = get_object_or_404(ChallengeMember, user=request.user.id, challenge=goal.challenge)
@@ -238,7 +237,16 @@ class CompleteGoalIndex(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+class UserCompleteGoal(APIView):
+    def get(self, request):
+        try:
+            queryset = CompletedGoal.objects.filter(challenge_member__user=request.user).order_by('completion_date')[:5] # get all the completed goals of that user, no matter the challenge
+            serializer = CompletedGoalSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as error:
+            return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+   
 class UserProfileIndex(APIView):
     def get(self,request):
         try:

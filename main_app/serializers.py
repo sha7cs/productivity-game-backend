@@ -5,13 +5,17 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model= User
         fields = ['id','username', 'email', 'first_name']
+    
         
 class UserProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    wins_count = serializers.SerializerMethodField()
     class Meta:
         model = UserProfile
         fields = '__all__'
-
+        
+    def get_wins_count(self,obj):
+        return obj.user.challenges_won.count()
 class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
@@ -38,7 +42,7 @@ class ChallengeMemberSerializer(serializers.ModelSerializer):
 class ChallengeSerializer(serializers.ModelSerializer):
     members = ChallengeMemberSerializer(many=True, read_only=True)
     goals = GoalSerializer(many=True, read_only=True)
-    winner = UserSerializer()
+    winner = UserSerializer(read_only=True)
     # created_by = UserProfileSerializer(read_onl) # it shouldnt be read only because it is a field in this model
     
     class Meta:

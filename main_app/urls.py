@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import ChallengeIndex, ChallengeDetail, SignUpView, GoalIndex, GoalDetail, LeaveChallenge, JoinChallenge,MakeCompletedGoal, CompleteGoalIndex,UserProfileIndex
+from .views import ChallengeIndex, ChallengeDetail, SignUpView, GoalIndex, GoalDetail, LeaveChallenge, JoinChallenge,MakeCompletedGoal, CompleteGoalIndex,UserProfileIndex,UserCompleteGoal
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 urlpatterns = [
     path('challenges/', ChallengeIndex.as_view(), name='all_challenges'),
@@ -10,6 +10,7 @@ urlpatterns = [
     path('challenges/join/', JoinChallenge.as_view(), name='member_joins'),
     path('challenges/<int:challenge_id>/goals/<int:goal_id>/complete/', MakeCompletedGoal.as_view(), name='complete_goal'),
     path('challenges/<int:challenge_id>/goals/complete/', CompleteGoalIndex.as_view(), name='complete_goal_index'),
+    path('challenges/goals/completed/', UserCompleteGoal.as_view(), name='all_user_completed_goal'),
     path('user-profile/' , UserProfileIndex.as_view(), name='user-profile'),
     # Auth
     path('login/', TokenObtainPairView.as_view(), name='login'),
