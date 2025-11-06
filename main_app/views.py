@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
@@ -26,7 +26,7 @@ def makeAsChallengeMember(challenge_id, user_id):
 class ChallengeIndex(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request): # imight make it take user id so i only send a list of user challenges
+    def get(self, request): 
         try:
             queryset = Challenge.objects.filter(
                 Q(created_by=request.user) | Q(members__user=request.user)
@@ -41,10 +41,10 @@ class ChallengeIndex(APIView):
         try:
             serializer = ChallengeSerializer(data=request.data)
 
-            # i will return to this to make the user logged in as the creator by default 
             if serializer.is_valid():
                 serializer.save()
 
+                # i will return to this to make the user logged in as the creator by default 
                 makeAsChallengeMember(challenge_id = serializer.data['id'] , user_id=serializer.data['created_by'])
                 
                 return Response(serializer.data,status=status.HTTP_201_CREATED)
@@ -225,8 +225,6 @@ class MakeCompletedGoal(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as error:
             return Response({'error':str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    # I will leave deleteing a complete goal entity for later, because logically it is not really needed,
-    # and i will see how i will do it after i apply the addition in frontend
 
 class CompleteGoalIndex(APIView):
     def get(self, request, challenge_id):
@@ -241,7 +239,7 @@ class CompleteGoalIndex(APIView):
 class UserCompleteGoal(APIView):
     def get(self, request):
         try:
-            queryset = CompletedGoal.objects.filter(challenge_member__user=request.user).order_by('completion_date')[:5] # get all the completed goals of that user, no matter the challenge
+            queryset = CompletedGoal.objects.filter(challenge_member__user=request.user).order_by('-completion_date')[:5] # get all the completed goals of that user, no matter the challenge
             serializer = CompletedGoalSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as error:

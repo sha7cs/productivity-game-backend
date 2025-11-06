@@ -53,7 +53,6 @@ class CompletedGoal(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='completed_goals')
     challenge_member = models.ForeignKey(ChallengeMember , on_delete=models.CASCADE , related_name='completed_goals')
     completion_date = models.DateField(auto_now_add=True)
-    # proof = models.ImageField() # will see it later since it's optional
     
     class Meta:
         unique_together = ('goal', 'challenge_member') 
